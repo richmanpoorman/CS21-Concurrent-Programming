@@ -11,7 +11,7 @@ new() -> [].
 % Purpose : Clears the given databse
 % Params  : (Database) The to database to clear
 % Return  : (Database) The database after clearing
-destroy(_) -> new().
+destroy(_) -> ok.
 
 % Name    : write
 % Purpose : Inserts the given key into the database if the key exists, or 
@@ -30,7 +30,7 @@ write(Key, Element, [Entry | Next])    -> [Entry | write(Key, Element, Next)].
 % Params  : (Key)      The identifier of the data
 %           (Database) The database to delete from
 % Return  : (Database) The updated database after deleting
-delete(Key, [])                -> [];
+delete(_Key, [])               -> [];
 delete(Key, [{Key, _} | Next]) -> Next;
 delete(Key, [Entry | Next])    -> [Entry | delete(Key, Next)].
 
@@ -40,16 +40,16 @@ delete(Key, [Entry | Next])    -> [Entry | delete(Key, Next)].
 % Params  : (Key)      The identifier of the data
 %           (Database) The database to read from
 % Return  : (Value)    The data associated with the given key
-read(Key, [])              -> {error, instance};
-read(Key, [{Key, Value}])  -> Value;
-read(Key, [{_, _} | Next]) -> read(Key, Next).
+read(_, [])                   -> {error, instance};
+read(Key, [{Key, Value} | _]) -> {ok, Value};
+read(Key, [{_, _} | Next])    -> read(Key, Next).
 
 % Name    : match
-% Purpose : Gets a key which is associated with the given value, or returns 
-%           an error if the key does not exist
+% Purpose : Gets a list of keys which are associated with the given value, or 
+%           returns an empty list if the key does not exist
 % Params  : (Value)    The data to find the key of
 %           (Database) The database to read from
 % Return  : (Key)      The identifier of the data
-match(Value, [])              -> {error, instance};
-match(Value, [{Key, Value}])  -> Key;
-match(Value, [{_, _} | Next]) -> match(Value, Next).
+match(_Value, [])                   -> [];
+match(Value, [{Key, Value} | Next]) -> [Key | match(Value, Next)];
+match(Value, [{_, _} | Next])       -> match(Value, Next).

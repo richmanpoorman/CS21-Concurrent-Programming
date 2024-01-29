@@ -1,0 +1,23 @@
+c(ps01).
+ps01:is_homogeneous([1, 1, 1, 1]).
+ps01:is_homogeneous([apple, orange, pear]).
+ps01:is_homogeneous([]).
+ps01:is_homogeneous([[a, a, a, [b]], [a, a, a, [b]], [a, a, a, [b]]]).
+ps01:is_homogeneous([[b], b, [b, b]]). 
+ps01:get_roots(1.0, 0.0, 0.0). 
+ps01:get_roots(1.0, 0.0, 3.0).    
+ps01:get_roots(1.0, 5.0, -3.0).   
+ps01:get_roots(0.0, 2.0, 1.34).   
+ps01:ints_from_to(2, 3).
+ps01:ints_from_to(2, 2).
+ps01:evens_odds([1,5,5325,532,532523,5327627,879,21,112,1,1,1,1,2,3,2,2,0]).
+c(db).
+Db = db:new().
+Db1 = db:write(francesco, london, Db).
+Db2 = db:write(lelle, stockholm, Db1).
+db:read(francesco, Db2).
+Db3 = db:write(joern, stockholm, Db2).
+db:read(ola, Db3).
+Db4 = db:delete(lelle, Db3).
+db:match(stockholm, Db4).
+q().
