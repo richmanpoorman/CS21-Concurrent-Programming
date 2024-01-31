@@ -11,6 +11,9 @@ ps01:get_roots(0.0, 2.0, 1.34).
 ps01:ints_from_to(2, 3).
 ps01:ints_from_to(2, 2).
 ps01:evens_odds([1,5,5325,532,532523,5327627,879,21,112,1,1,1,1,2,3,2,2,0]).
+ps01:evens_odds([1,3,5,7,9,11]).
+ps01:evens_odds([0, 2, 4, 6, 8, 10]).
+ps01:evens_odds([1,2,3,4,5,6,7,8,9,10]).
 c(db).
 Db = db:new().
 Db1 = db:write(francesco, london, Db).

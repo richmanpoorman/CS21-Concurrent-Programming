@@ -16,7 +16,7 @@ is_homogeneous([Element | Next]) -> matches_with(Element, Next).
 % Params  : (auto)   The element of the list to check against 
 %           (List[]) The list to check the elements of
 % Return  : (boolean) Whether all of the elements match or not
-matches_with(Element, [])               -> true;
+matches_with(_Element, [])              -> true;
 matches_with(Element, [Element | Next]) -> matches_with(Element, Next);
 matches_with(_Element, [_ | _])         -> false.
 
@@ -27,9 +27,9 @@ matches_with(_Element, [_ | _])         -> false.
 %           (Number) The value of the 'b' coefficient
 %           (Number) The value of the 'c' coefficient
 % Return  : (boolean) Whether all of the elements match or not
-get_roots(0.0, _, _)                       -> error;
+get_roots(A, _, _) when A == 0             -> error;
 get_roots(A, B, C) when (B*B - 4*A*C)  < 0 -> [];
-get_roots(A, B, C) when (B*B - 4*A*C) == 0 -> [(-B / (2 * A))];
+get_roots(A, B, C) when (B*B) == (4*A*C)   -> [(-B / (2 * A))];
 get_roots(A, B, C) when (B*B - 4*A*C)  > 0 -> [
     ((-B - math:sqrt(B*B - 4*A*C)) / (2 * A)),
     ((-B + math:sqrt(B*B - 4*A*C)) / (2 * A))
@@ -57,7 +57,7 @@ evens_odds(List) -> get_even_odds(List, [], []).
 %           (List[Number]) List of Even numbers accumulated
 %           (List[Number]) List of Odd numbers accumulated
 % Return  : ({List, List}) The list of even numbers and list of odd numbers
-get_even_odds([], Evens, Odds) -> {Evens, Odds};
+get_even_odds([], Evens, Odds)                           -> {Evens, Odds};
 get_even_odds([X | Next], Evens, Odds) when X rem 2 == 0 -> 
     get_even_odds(Next, [X | Evens], Odds);
 get_even_odds([X | Next], Evens, Odds) when X rem 2 == 1 ->
