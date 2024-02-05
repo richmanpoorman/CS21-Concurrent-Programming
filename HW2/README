@@ -1,0 +1,24 @@
+Assignment: PS2
+
+Name: Matthew Wong
+Date: 2/5/2024
+Time: 3 hr
+Help: None 
+
+Questions:
+1) Note that the time complexity of the program depends on Fun; however,
+    in most mapping, Fun is usually O(1), so we will assume so moving forwards.
+   Then, if given enough cores, the time complexity is O(n), as since 
+   all operations can be done at the same time, that means that the time will
+   be only be limited by the longest operation of Fun, which is O(1).
+   However, adding them all to the same list takes O(n) as we need to add
+   n elements to a list. 
+   It is the same if we don't have enough cores, but will be slower in 
+   practicality. 
+2) If you have smaller messages, you can start working on them as they come in;
+   meaning, you can do work while waiting for other messages to come in. 
+   However, if you send it all at once, then the program must wait for the
+   whole thing to be finished before it can start doing any work. 
+   In addition, it can help keep the mailbox empty, as the process can collect
+   the messages as they come in, versus dumping a heavy load on the mailbox 
+   all at once.
