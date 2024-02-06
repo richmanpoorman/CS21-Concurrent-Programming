@@ -17,8 +17,25 @@ start(Module) -> spawn(basic_gen_server, loop, [Module, callback:init()]).
 % Purpose : Runs the server
 % Params  : (atom Module)        The server module to run
 %           (state CurrentState) The state at the start of the iteration
-% Return  : ok
+% Return  : (None)
+loop(Module, CurrentState) -> 
+    NextState = 
+        receive 
+            {call, Pid, Request} -> 
+                {reply, Reply, NewState} = 
+                    handle_call(Request, Pid, CurrentState),
+                Pid ! {call, self(), Reply},
+                NewState 
+            {cast, Pid, Request} -> 
+                {noreply, NewState} = handle_cast(Request, CurrentState),
+                NewState
+            {code_swap, NewState} -> 
+                {ok, NewState} = handle_swap_code(CurrentState),
+                NewState 
+        end,
+    loop(Module, NewState).
 
+    
 
 %%% CLIENT SIDE %%%
 
@@ -29,9 +46,9 @@ start(Module) -> spawn(basic_gen_server, loop, [Module, callback:init()]).
 %           (request Request) The request to send to the server
 % Return  : (reply) The answer from the server
 call(Pid, Request) -> 
-    Pid ! {self(), Request},
+    Pid ! {call, self(), Request},
     receive 
-        {Pid, Reply} -> Reply
+        {call, Pid, Reply} -> Reply
     end. 
 
 % Name    : cast
@@ -39,9 +56,12 @@ call(Pid, Request) ->
 % Params  : (pid Pid)         The Pid where the server is located
 %           (request Request) The request to send to the server
 % Return  : ok
-
+cast(Pid, Request) -> 
+    Pid ! {cast, self(), Request},
+    ok.
 
 % Name    : swap_code
 % Purpose : 
 % Params  : 
 % Return  : 
+swap_code(Pid, NewCallBackModule)

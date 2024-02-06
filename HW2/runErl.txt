@@ -1,1 +1,8 @@
 c(concurrency).
+c(basic_gen_server).
+c(name_server).
+MyServer = basic_gen_server:start(name_server).
+name_server:add(MyServer, "Sally", "Halligan").
+name_server:add(MyServer, "Joe", "Home").
+name_server:whereis(MyServer, "Sally").
+name_server:whereis(MyServer, "Jill").
