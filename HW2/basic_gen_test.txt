@@ -1,4 +1,3 @@
-c(concurrency).
 c(basic_gen_server).
 c(name_server).
 MyServer = basic_gen_server:start(name_server).
@@ -6,3 +5,9 @@ name_server:add(MyServer, "Sally", "Halligan").
 name_server:add(MyServer, "Joe", "Home").
 name_server:whereis(MyServer, "Sally").
 name_server:whereis(MyServer, "Jill").
+c(new_name_server).
+basic_gen_server:swap_code(MyServer, new_name_server).
+new_name_server:all_names(MyServer).
+new_name_server:whereis(MyServer, "Joe").
+new_name_server:delete(MyServer, "Sally").
+new_name_server:whereis(MyServer, "Sally").
