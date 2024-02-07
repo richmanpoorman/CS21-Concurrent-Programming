@@ -1,0 +1,3 @@
+c(chat_server).
+chat_server:start(fun_chat).
+q().
