@@ -5,7 +5,8 @@
 
 %%% Client Side
 join(ChatName, NodeName, User) -> 
-        {ChatName, NodeName} ! {join, {User, spawn(fun chat_client:message_listen/0)}},
+        {ChatName, NodeName} ! {join, {User, 
+                spawn(fun chat_client:message_listen/0)}},
         message_reader(ChatName, NodeName, User).
 
 message_listen() ->

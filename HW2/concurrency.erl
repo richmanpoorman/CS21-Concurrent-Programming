@@ -56,6 +56,7 @@ merge([ValA | NextA], [ValB | NextB]) when ValA > ValB ->
 % Params  : (list List) The list of numbers to sort
 % Return  : (list) The sorted list of numbers
 merge_sort([]) -> [];
+merge_sort([X]) -> [X];
 merge_sort(List) -> 
     ParallelSort = spawn(concurrency, parallel_merge_sort, [self(), List]),
     receive
@@ -70,9 +71,11 @@ merge_sort(List) ->
 % Return  : (list) The sorted list
 parallel_merge_sort(ReturnPid, []) -> 
     ReturnPid ! {self(), []};
+parallel_merge_sort(ReturnPid, [X]) ->
+    ReturnPid ! {self(), [X]};
 parallel_merge_sort(ReturnPid, List) ->
-    Length = length(List, 0),
-    [ListA, ListB] = lists:split(Length / 2, List),
+    Length = length(List),
+    {ListA, ListB} = lists:split(trunc(Length / 2), List),
     ListAPid = spawn(concurrency, parallel_merge_sort, [self(), ListA]),
     ListBPid = spawn(concurrency, parallel_merge_sort, [self(), ListB]),
     SortedA = 
@@ -85,13 +88,3 @@ parallel_merge_sort(ReturnPid, List) ->
         end,
     SortedList = merge(SortedA, SortedB),
     ReturnPid ! {self(), SortedList}. 
-
-% Name    : length(List, Size)
-% Purpose : Given an accumulator Size and a list List, the function 
-%           returns the length of the list
-% Params  : (list List) The list to find the size of
-%           (number Size) The accumulator for the size (should be normally
-%               given as 0) 
-% Return  : (number) The size of the list
-length([], Size) -> Size;
-length([_ | Tail], Size) -> length(Tail, 1 + Size).
