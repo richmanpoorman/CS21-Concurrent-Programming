@@ -1,0 +1,26 @@
+Name: Matthew Wong
+Date: 12 February 2024
+Time: ~5 hr
+Help: Neil (TA) 
+
+I did not look at any available solutions, but did reference the 
+in class chat example.
+
+Server Instructions: 
+To start the server, use the chat:start_link(Name) in order to start 
+    the server on a given erlang node. This will create a chatroom with the 
+    name Name. 
+To join the server, use the chat:join_room(ServerNode, Room, Name) in order to
+    join a room that is active; note that you can join inactive rooms, but 
+    there won't be any server side requests that will work. This function will
+    automatically activate the receiver and the messanger, so the user can 
+    type their messages onto the chat board. 
+To see the users in the chat room, use the --list command while in the 
+    messanger to get a list of all of the names that are in the board 
+To exit the chatroom, use the --quit command while in the messanger to exit
+
+Note that if two users with the same name join, there is undefined behavior, 
+    as it won't check if that is allowed or not. If you are in a room that 
+    is not hosted by a server, then calling --list is undefined behavior, 
+    and messages will not be received. Also, room names are atoms, as each 
+    room gets their own server. Mark said that this matched the specification. 
