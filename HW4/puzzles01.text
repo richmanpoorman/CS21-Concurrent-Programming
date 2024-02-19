@@ -1,0 +1,69 @@
+Name: Matthew Wong
+Date: 19 February 2024
+Time: 1hr 
+Help: N/A
+
+    I did not look at any availible solutions for the exercises
+
+;; Puzzle 1: Rendezvous 
+
+    ;; SHARED ACCESS 
+    1  aDone = Semaphore(0) 
+    2  bDone = Semaphore(0)
+
+    ;; THREAD A 
+    1  statement a1 
+    2  aDone.signal() 
+    3  bDone.wait() 
+    4  statement a2 
+
+    ;; THREAD B 
+    1  statement b1 
+    2  bDone.signal()  
+    3  aDone.wait() 
+    4  statement b2 
+
+
+    ;; Explanation 
+        Notice that to move on to the next step, both threads need to wait for 
+    the other Thread to get through a1/b1. Since they only signal after 
+    getting through their operation, the operation can't move past the wait 
+    until the other thread also sends the signal. This is because since 
+    the semaphores are initialized as 0, any wait will cause the value to go 
+    negative and thus block. However, if the signal is sent, then their 
+    decrement will be non-negative, so they may continue running. 
+        This means that a2 must ALWAYS come after b1, as it is waiting for 
+    the bDone signal (as if the semaphore hadn't been incremented it would 
+    block), and the bDone signal is ONLY sent after b1. The same is for 
+    b2 and a1. Thus, the order that b1 comes before a2 and a1 comes before b2 
+    is ensured. 
+
+;; Puzzle 2 
+
+    ;; SHARED ACCESS 
+    1  count             = 0 // Just defining count; a placeholder
+    2  canIncrementCount = Semaphore(1) 
+
+    ;; THREAD A 
+    1  canIncrementCount.wait() 
+    2  count = count + 1 
+    3  canIncrementCount.signal() 
+
+    ;; THREAD B 
+    1  canIncrementCount.wait() 
+    2  count = count + 1 
+    3  canIncrementCount.signal() 
+
+    ;; Explanation
+        Notice that if one of the threads call wait to decrement the sephamore,
+    the other thread will block at wait, as the semaphore will be at 0. 
+    This means that only 1 thread can get past the wait at a time, so the 
+    other thread will need to wait for the thread which go through to 
+    finish and signal. 
+        Since the thread signals after it is done with their operation, 
+    this allows threads waiting to edit count to try to get through the wait 
+    and decrement back to zero. 
+        This enforces mutual exclusion, since only one thread can 
+    increment count, as the other will have to wait, then when count is not 
+    being changed (aka when the semaphore is back to 1), the other thread also 
+    decrements when altering it. 
