@@ -1,7 +1,13 @@
-from threading_cleanup import Thread, Semaphore, watcher
+'''
+    Name: Matthew Wong 
+    Date: 21 February 2024
+    Use : Runs program which transforms a given image
+'''
+
+from threading_cleanup import Thread, Semaphore
 import os, sys
 from PIL import Image 
-from typing import List, Dict, Callable, Tuple
+from typing import List, Tuple
 import numpy as np
 from math import ceil
 
