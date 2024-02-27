@@ -2,6 +2,12 @@
     Name: Matthew Wong 
     Date: 21 February 2024
     Use : Runs program which transforms a given image
+          
+    Run : 
+        python3 transform_image.py [image] [output file] [transform]
+        or
+        python3 transform_image.py [image] [output file] [transform] \
+            [number of rows] [number of columns]
 '''
 
 from threading_cleanup import Thread, Semaphore

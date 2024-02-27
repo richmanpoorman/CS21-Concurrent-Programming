@@ -1,0 +1,44 @@
+Name: Matthew Wong
+Date: 22 February 2024
+Time: 7 hr
+Help: Mark Sheldon, Liam
+
+transform_image.py:
+    The program divides the image into the number of rows and the 
+    number of columns before performing a concurrent mapping on all 
+    of the pixels
+
+    I used numpy in my implementation, cropping the section that 
+    the thread was responsible for (locked with a semaphore), then editing it
+    concurrently, before adding it back to the original image (locked with 
+    a semaphore)
+
+    Custom functions:
+        switch-r-b
+            Swaps the red and blue channels of the image
+        invert
+            Inverts the 3 color channels by doing 255 - x to each channel
+        dim 
+            Makes the image dimmer by 50 percent by dividing each color 
+            channel by 2 
+        identity
+            Does nothing to the image
+
+prodedural_artist.py: 
+    The program creates a thread for each artist, and 
+    runs the following algorithm for the given number of steps:
+        1. Choose a direction to go to
+            a. If it is empty, paint there and set that as the new location
+            b. Else, choose a random pixel owned and set that as the new 
+               location (without trying to go in a direction and paint)
+
+    Note that these steps often go to steps that the artist can not go to
+    so the clumps of color they make are often small. This is because
+    it is often picking pixels that it has fully surrounded. 
+
+    I used the python locks in my implementation, using the with key word 
+    to try to pick up and drop the locks in order to try to paint;
+    I did this because it was safer than using the thread implementation given.
+
+I use the cleaned up semaphores put into a file called 
+    threading_cleanup.py

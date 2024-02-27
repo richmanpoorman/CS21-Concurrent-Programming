@@ -1,0 +1,108 @@
+Name: Matthew Wong
+Date: 26 February 2024
+Time: 3 hr
+Help: N/A
+
+    I did not look at any availible solutions for the exercises
+
+;; Puzzle 1: Multiplex
+
+    ;; SHARED ACCESS
+    1  n = the upper limit of threads to work on the critical region
+    2  blocker = Semaphore(n)
+
+    ;; Thread 
+    1  blocker.wait() 
+    2  critical region 
+    3  blocker.signal() 
+
+    ;; Explanation 
+        Notice that at most n threads can be in the critical region at 
+    any given time. This is because to get into the critical region, 
+    they must first run through the wait. Notice that since the semaphore 
+    has n as it's starting value, if more than n threads try to acquire 
+    the thread, then the semaphore will decrement to negative, blocking 
+    the thread. However, when a thread exits the critical region, the 
+    signal will be sent, allowing another thread in to the critical region. 
+        The difference between a mutex and this is that it can take up to 
+    n threads by having the semaphore starting at n rather than starting at 1;
+    in other words, a mutex is a multiplex with n = 1. 
+
+;; Puzzle 2: Barrier 
+
+    ;; SHARED ACCESS 
+    1  n       = the number of threads 
+    2  count   = 0
+    3  mutex   = Semaphore(1) 
+    4  barrier = Semaphore(0)
+    
+    ;; Thread (Without a reusable barrier) 
+    1  mutex.wait() 
+    2  count = count + 1 
+    3  if (count == n):
+    4      barrier.signal() 
+    5  mutex.signal() 
+    6  barrier.wait() 
+    7  barrier.signal() 
+    8  critical point
+
+    ;; Thread (With a reusable barrier)
+    1  mutex.wait() 
+    2  count = count + 1 
+    3  if (count == n):
+    4      barrier.signal() 
+    5  mutex.signal() 
+    6  barrier.wait() 
+    7  barrier.signal() 
+    8  mutex.wait() 
+    9  count = count - 1
+    10 if (count == 0):
+    11     barrier.wait() 
+    12 mutex.signal() 
+    13 critical point
+
+    ;; Explanation 
+        Consider the first version, with a non-reusable barrier. Notice the 
+    'count' variable keeps track of how many threads have arrived at the 
+    barrier. I use the mutex semaphore to make sure that only one thread is 
+    updating the count at a time. If n threads haven't arrived there yet, then
+    the they will get to the barrier.wait(). Since the barrier semaphore starts
+    at 0, it means that the thread will block before continuing. Notice that 
+    on the nth thread to increment the count, the count will be at n, so the 
+    thread will signal to the barrier, incrementing the thread and waking up 
+    one of the waiting threads. Notice that the thread will wake up regardless 
+    of the count of the semaphore, as the signal wakes up one of the the 
+    threads. Then, the thread that woke up will be able to signal after the 
+    wait, allowing the next thread to wake up. This chain reaction will 
+    continue until all of the threads have been let through, including the 
+    thread that arrived last, as it will also try to wait. The key is that 
+    the threads will always try to wake another thread up after waking up. 
+    If there is no threads waiting, it "stores" the wake up call by making the
+    semaphore positive, and if there is a thread waiting, the semaphore will be
+    negative, and the signal will just wake up one of the waiting threads. 
+    Notice that the thread will still be able to go through even if the all of
+    the other threads wake up before the last thread reaches the wait, as the
+    semaphore will be positive, allowing the thread to go through. This is a 
+    one-time usebarrier, as the barrier will not be in the same starting 
+    condition as itwas at the beginning; the barrier semaphore will be at 1 
+    and not 0, as it is now positive to indicate that it is "open". There is 
+    nothing to "close" the barrier after it is done. 
+        The second version, with a reusable barrier, allows for the barrier 
+    to be reused, but it is still not perfect; if the barrier is attempted 
+    to be reused while it is still letting threads through, it messes it up. 
+    Besides that, the only add is that when the barrier gets through the 
+    barrier, it will decrement the count back to zero. Notice that the threads
+    will make count go back to zero, as each thread increments and decrements 
+    once. This means that when the count reaches 0, all of the threads have 
+    been let through, so the last thread can "close" the barrier by calling 
+    wait, which will decrement the semaphore. However, since all of the threads
+    have been let through, the barrier will be at 1. This is because 
+    all threads except the last thread to enter the barrier have a wait and 
+    a signal, which cancel out. The only one that doesn't cancel out is the 
+    initial signal when count reaches n, so when count reaches 0, the wait 
+    will cancel out that signal, and since the semaphore is positive at that
+    point, the wait will not block. Notice that the decrement can only happen
+    after getting through the barrier, which can only happen when the 
+    signal to let the threads the barrier is sent, which only happens when all 
+    the threads are there, so the decrementing can not interfere with the 
+    waiting process for all of the threads. 
