@@ -1,7 +1,7 @@
 Name: Matthew Wong
 Date: 26 February 2024
 Time: 3 hr
-Help: N/A
+Help: Liam
 
     I did not look at any availible solutions for the exercises
 
@@ -62,31 +62,21 @@ Help: N/A
     13 critical point
 
     ;; Explanation 
-        Consider the first version, with a non-reusable barrier. Notice the 
-    'count' variable keeps track of how many threads have arrived at the 
-    barrier. I use the mutex semaphore to make sure that only one thread is 
-    updating the count at a time. If n threads haven't arrived there yet, then
-    the they will get to the barrier.wait(). Since the barrier semaphore starts
-    at 0, it means that the thread will block before continuing. Notice that 
-    on the nth thread to increment the count, the count will be at n, so the 
-    thread will signal to the barrier, incrementing the thread and waking up 
-    one of the waiting threads. Notice that the thread will wake up regardless 
-    of the count of the semaphore, as the signal wakes up one of the the 
-    threads. Then, the thread that woke up will be able to signal after the 
-    wait, allowing the next thread to wake up. This chain reaction will 
-    continue until all of the threads have been let through, including the 
-    thread that arrived last, as it will also try to wait. The key is that 
-    the threads will always try to wake another thread up after waking up. 
-    If there is no threads waiting, it "stores" the wake up call by making the
-    semaphore positive, and if there is a thread waiting, the semaphore will be
-    negative, and the signal will just wake up one of the waiting threads. 
-    Notice that the thread will still be able to go through even if the all of
-    the other threads wake up before the last thread reaches the wait, as the
-    semaphore will be positive, allowing the thread to go through. This is a 
-    one-time usebarrier, as the barrier will not be in the same starting 
-    condition as itwas at the beginning; the barrier semaphore will be at 1 
-    and not 0, as it is now positive to indicate that it is "open". There is 
-    nothing to "close" the barrier after it is done. 
+        Consider the first version, with a non-reusable barrier. The count 
+    variable keeps track of how many threads have arrived at the barrier. 
+    If they are not the nth, thread, they go past the signal condition and 
+    end up waiting. Then, when the nth thread arrives at the barrier, then 
+    they will signal to the barrier, waking up the thread. Then, the thread 
+    that wakes up will wake up the next thread, setting off a chain reaction 
+    which will wake up all of the awaiting thread, including the nth thread,
+    which will also end up waiting. At the end, the barrier will have a 
+    value of 1, as there is nothing to "close" the barrier. Notice that the 
+    incrementing and decrementing of count are in mutex, so the count can't 
+    have a race condition. Then, since a wait comes before signal in all 
+    threads except for the nth thread, in which the signal comes before the 
+    wait, they will all wait for the last thread, which will set the chain 
+    reaction off with their initial signal. Note that if the signal is reached
+    before the threads wait, it will "store" the signal in the thread. 
         The second version, with a reusable barrier, allows for the barrier 
     to be reused, but it is still not perfect; if the barrier is attempted 
     to be reused while it is still letting threads through, it messes it up. 
