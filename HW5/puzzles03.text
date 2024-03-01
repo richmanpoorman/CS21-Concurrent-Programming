@@ -1,0 +1,79 @@
+Name: Matthew Wong
+Date: 28 February 2024
+Time: 3 hr
+Help: N/A
+
+;; Puzzle 1: Reusable Barrier 
+
+    ;; SHARED MEMORY 
+    1   n          = the number of threads 
+    2   count      = 0
+    3   mutex      = Semaphore(1) 
+    4   turnstile1 = Semaphore(0)
+    5   turnstile2 = Semaphore(1)
+
+    ;; THREAD (Using 2 turnstiles)
+    1   rendezvous
+    2   mutex.wait()             // Count number of threads arrived
+    3   count = count + 1 
+    4   if (count == n):
+    5       mutex.signal() 
+    6       turnstile2.wait()   // Note that the second needs to close first
+    7       turnstile1.signal() 
+    8   else: 
+    9       mutex.signal()      
+    10  turnstile1.wait()       // Wait until all threads have arrived
+    11  turnstile1.signal() 
+    12  mutex.wait()            // Count number of threads through
+    13  count = count - 1
+    14  if (count == 0):
+    15      mutex.signal()
+    16      turnstile1.wait()   // Note that the first needs to close first
+    17      turnstile2.signal() 
+    18  else: 
+    19      mutex.signal() 
+    20  turnstile2.wait()       // Wait until all threads are through
+    21  turnstile2.signal()
+    22  critical region 
+
+    ;; Explanation
+        The two turnstiles act like an airlock; before the first barrier opens,
+    the second barrier closes. Then, when all of the threads have reached the
+    second barrier, the first barrier closes and the second barrier opens, 
+    allowing the threads to the critical region. Note that the barriers must 
+    close the other before opening, as it may allow for a race condition where
+    the threads may race through both barriers before the other barrier closes.
+    In addition, the if comparison to count MUST be in the mutex, as you do 
+    NOT want race conditions, as it is crucial that the invariant that 
+    the semaphore is at 1 at the end if it is open or 0 if it is closed; if 
+    you have a race condition, you may signal/wait more times than expected.
+    I also put the mutex before the wait, as I don't like having the thread 
+    holding a mutex while calling wait, even though I don't believe it causes
+    problems (better safe than sorry).
+
+
+;; Puzzle 2: Queue
+
+    ;; SHARED MEMORY 
+    1   leaderQueue   = Semaphore(0)
+    2   followerQueue = Semaphore(0)
+
+    ;; Leader Thread 
+    1   followerQueue.signal() 
+    2   leaderQueue.wait() 
+    3   critical section 
+
+    ;; Follower Thread 
+    1   leaderQueue.signal() 
+    2   followerQueue.wait() 
+    3   critical section
+
+    ;; Explanation 
+        When a leader joins the queue, they first check if a follower is 
+    in the queue, using the follower.signal(); the follower is also 
+    checking if a leader is in the queue using the leaderQueue.signal(). 
+    Both the follower and leader then wait for confirmation that they 
+    have a partner to go with, and when they do, they can both enter the 
+    critical section; notice that this doesn't follow a strict FIFO order, 
+    as the follower and leader queue just keep track if there is a follower 
+    or leader that can pair up with the the other. 
