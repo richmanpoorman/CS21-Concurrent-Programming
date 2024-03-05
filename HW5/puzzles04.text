@@ -1,0 +1,40 @@
+Name: Matthew Wong
+Date: 5 March 2024
+Time: 2 hr
+Help: N/A
+
+;; Puzzle 1: FIFO Queue 
+
+    ;; FIFO CLASS
+    class Fifo:
+        def __init__(self):
+            self.queue = Queue() 
+            self.mutex = Semaphore(1)
+        
+        def wait(): 
+            semaphore = Semaphore(0)
+            self.mutex.wait() 
+            self.queue.push(semaphore)
+            self.mutex.signal()
+            semaphore.wait()
+
+        def signal():
+            self.mutex.wait() 
+            if (not self.queue.empty()):
+                semaphore = self.queue.remove()
+                semaphore.signal()
+            self.mutex.signal()
+
+    ;; EXPLANATION 
+        When wait is called, it creates a new semaphore, will act as a blocker
+    for the current thread. Then, it saves it to the queue, using the mutex 
+    to make sure that the thread has exclusive access to the queue at that 
+    time. Then, it will wait on the newly created semaphore. Note that the 
+    reference to the semaphore is in the queue. 
+        Then, when signal is called, the thread will aquire the lock so that 
+    it can try to pop the semaphore (which is currently at -1) is waiting. 
+    Since each thread makes their own semaphore, each semaphore represents 
+    each of the waiting threads, and since the semaphores were added in a 
+    queue, the semaphores will be in the order of FIFO. Then, that semaphore 
+    is woken up, waking up the thread that corresponds to the semaphore, 
+    resuming that thread, and then the current thread releases the mutex. 

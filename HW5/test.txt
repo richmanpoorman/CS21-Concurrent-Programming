@@ -1,0 +1,8 @@
+a b 
+a b 
+a a 
+A a 
+a B 
+
+B         B           
+Cat dog fish cat dog dog.	
