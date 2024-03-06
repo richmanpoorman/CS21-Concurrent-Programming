@@ -1,0 +1,9 @@
+Tests/ps05/Nietzsche.txt
+Tests/ps05/Ulysses.txt
+Tests/ps05/WarAndPeace.txt
+Tests/ps05/alice_in_wonderland.txt
+Tests/ps05/holmes.txt 
+Tests/ps05/pride_and_prejudice.txt 
+Tests/ps05/Hamlet.txt 
+Tests/ps05/Mahabharata.txt 
+Tests/ps05/MobyDick.txt
