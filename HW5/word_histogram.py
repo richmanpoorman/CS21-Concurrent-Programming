@@ -3,6 +3,12 @@ import sys
 from FileWordFrequency import FileWordFrequency
 
 def main(args):
+    '''
+        Name    : main
+        Param   : (list) args := The arguments called with on execution
+        Purpose : Runs the word_histogram program, and opens files
+        Return  : (None)
+    '''
     if len(args) != 3 and len(args) != 5:
         print("Wrong number of arguments")
         exit(1)

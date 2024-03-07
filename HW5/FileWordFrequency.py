@@ -5,6 +5,14 @@ from sys import stdin
 
 class FileWordFrequency:
     def __init__(self, outputFile, maxThreads : int = 10):
+        '''
+            Name    : __init__
+            Param   : (File) outputFile := The file to output the combined 
+                                           histogram to 
+                      (int)  maxThreads := The maximum total number of threads
+            Purpose : Initializes and runs the 
+            Return  : 
+        '''
         self.outputFile         = outputFile 
         self.maxConsumers       = maxThreads - 1
         self.totalFrequency     = dict() 
@@ -12,12 +20,21 @@ class FileWordFrequency:
         self.fileQueue          = WorkQueue()
         self.running            = True
 
-        self.run()
+        self.run(stdin)
         
-    def run(self):
+    def run(self, inputFile):
+        '''
+            Name    : run
+            Param   : (File) inputFile := The input stream with the file names
+                                          to count the frequency of
+            Purpose : Starts maxThreads - 1 consumer threads, and acts as a 
+                      producer thread on the files by adding file names to 
+                      the shared worker queue
+            Return  : (None)
+        '''
         threads = [Thread(self.readFileThread) for _ in \
                                                range(self.maxConsumers)]
-        for fileName in stdin:
+        for fileName in inputFile:
             if fileName.strip():
                 self.fileQueue.produce(fileName.strip())
 
@@ -29,6 +46,15 @@ class FileWordFrequency:
         self.fileQueue.finish()
 
     def readFileThread(self):
+        '''
+            Name    : readFileThread
+            Param   : (None)
+            Purpose : Consumer which takes file names off of the work queue, 
+                      processes and prints the word frequency of the file, 
+                      then adds the frequency to the shared combined frequency
+                      histogram, and updates the output file
+            Return  : (None)
+        '''
         while self.running or not self.fileQueue.isEmpty():
             fileName = self.fileQueue.consume()
             if not fileName:
@@ -43,6 +69,13 @@ class FileWordFrequency:
                 self.printTotalHistogram()
 
     def addToFrequency(self, frequencies : dict):
+        '''
+            Name    : addToFrequency
+            Param   : (dict) frequencies := The frequency of words to add to 
+                                            the combined histogram
+            Purpose : Adds frequencies of words to the combined histogram
+            Return  : None
+        '''
         with self.totalFrequencyLock:
             for word, frequency in frequencies.items():
                 if word in self.totalFrequency:
@@ -51,6 +84,12 @@ class FileWordFrequency:
                     self.totalFrequency[word] = frequency
 
     def printTotalHistogram(self):
+        '''
+            Name    : printTotalHistogram
+            Param   : (None)
+            Purpose : Prints the combined histogram to the output file
+            Return  : (None)
+        '''
         with self.totalFrequencyLock:
             sortedWords = sorted(list(self.totalFrequency.keys()))
             for word in sortedWords:
@@ -60,6 +99,14 @@ class FileWordFrequency:
                 self.outputFile.write(printLine)
 
     def printFileHistogram(fileName : str, histogram : dict):
+        '''
+            Name    : printFileHistogram
+            Param   : (str)  fileName  := The name of the file the histogram 
+                                          is from
+                      (dict) histogram := The word frequencies in the file
+            Purpose : Prints out the frequency from the file after processing
+            Return  : (None)
+        '''
         sortedWords = sorted(list(histogram.keys()))
         for word in sortedWords:
             frequency = histogram[word]
