@@ -18,7 +18,6 @@ class FileWordFrequency:
         self.totalFrequency     = dict() 
         self.totalFrequencyLock = Lock()
         self.fileQueue          = WorkQueue()
-        self.running            = True
 
         self.run(stdin)
         
@@ -38,13 +37,15 @@ class FileWordFrequency:
             if fileName.strip():
                 self.fileQueue.produce(fileName.strip())
 
-        self.running = False 
+        # Add the 'end' flag for the consumers to end themselves
+        self.fileQueue.produce(None)
 
         for thread in threads:
             thread.join()
         
-        self.fileQueue.finish()
-
+        self.printTotalHistogram()
+        
+        
     def readFileThread(self):
         '''
             Name    : readFileThread
@@ -55,18 +56,21 @@ class FileWordFrequency:
                       histogram, and updates the output file
             Return  : (None)
         '''
-        while self.running or not self.fileQueue.isEmpty():
+        while True:
             fileName = self.fileQueue.consume()
+
+            # End the consumer, and pass command to next consumer
             if not fileName:
+                self.fileQueue.produce(None)
                 return
-            with open(fileName) as file:
+            
+            with open(fileName.strip()) as file:
                 lines         = file.readlines()
                 fileFrequency = getWordFrequency(lines)
 
                 FileWordFrequency.printFileHistogram(fileName, fileFrequency)
-
+                
                 self.addToFrequency(fileFrequency)
-                self.printTotalHistogram()
 
     def addToFrequency(self, frequencies : dict):
         '''

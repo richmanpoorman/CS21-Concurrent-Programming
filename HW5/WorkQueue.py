@@ -13,18 +13,7 @@ class WorkQueue:
         self.queue     = deque() 
         self.queueLock = Lock()
         self.hasItems  = Condition(self.queueLock)
-        self.isDone    = False
     
-    def finish(self):
-        '''
-            Name    : finish
-            Param   : (None)
-            Purpose : Signals all of the threads and set the state to finished
-            Return  : (None)
-        '''
-        with self.queueLock:
-            self.isDone = True 
-            self.hasItems.notifyAll()
 
     def isEmpty(self):
         '''
@@ -40,8 +29,8 @@ class WorkQueue:
         '''
             Name    : produce
             Param   : (Any) item := The item to add to the work queue
-            Purpose : Adds the given to the work queue, and alerts a consumer
-                      that the queue has been updated
+            Purpose : Adds the given to the work queue, and alerts a waiting 
+                      consumer that the queue has been updated
             Return  : (None)
         '''
         with self.queueLock:
@@ -54,13 +43,10 @@ class WorkQueue:
             Param   : (None)
             Purpose : Returns an item from the queue if possible, or waits 
                       until it can acquire something from the queue
-            Return  : (Any) The item from the queue, or None if the work
-                      queue is finished
+            Return  : (Any) The item from the queue
         '''
         with self.queueLock:
             while not self.queue:
-                if self.isDone:
-                    return None
                 self.hasItems.wait()
             return self.queue.popleft()
         
