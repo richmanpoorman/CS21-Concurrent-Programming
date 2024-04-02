@@ -1,0 +1,39 @@
+Name: Matthew Wong
+Date: 4 April 2024
+Time: 0.5 hr
+Help: N/A
+
+;; Puzzle 1: No-starve Readers-writers 
+
+    ;; SHARED
+    1   readSwitch = Lightswitch() 
+    2   roomEmpty  = Semaphore(1)
+    3   turnstile  = Semaphore(1)
+
+    ;; READERS THREAD 
+    1   turnstile.wait() 
+    2   turnstile.signal()
+    3   readSwitch.lock(roomEmpty) 
+    4   critical section 
+    5   readSwitch.unlock(roomEmpty)
+
+    ;; WRITERS THREAD 
+    1   turnstile.wait() 
+    2   roomEmpty.wait() 
+    3   critical section
+    4   roomEmpty.signal()
+    5   turnstile.signal()
+
+    ;; EXPLANATION
+        A turnstile was added to the front of the reader thread, only allowing
+    a thread through the turnstile if it has not been blocked. However, 
+    whenever a writer thread is called, it blocks the turnstile, not allowing
+    other reader threads to enter the room. Then, since the reader threads 
+    will eventually leave the room, and no threads can enter the room while 
+    the writer thread is waiting, the writer thread will eventually be able 
+    to go through when the roomEmpty finally signals. 
+        When the writer thread finishes the room empty, it will signal, 
+    and finally release the turnstile, allowing other reader threads to 
+    go into the room. Note that this prevents starvation, as the writer 
+    will eventually be able to write, as long as the readers eventually leave, 
+    as readers can no longer enter while the writer is waiting to enter. 

@@ -1,0 +1,50 @@
+Name: Matthew Wong
+Date: 14 March 2024
+Time: 1.5 hr
+Help: Alex (Classmate), Liam (TA)
+
+    I did not look at any availible solutions for the exercises
+
+;; Puzzle 1: Reader-writers 
+
+    ;; SHARED THREAD 
+    1   int readers = 0
+    2   mutex       = Semaphore(1)
+    3   roomEmpty   = Semaphore(1)
+
+    ;; READER THREAD 
+    1   mutex.wait() 
+    2   if (readers == 0): 
+    3       roomEmpty.wait() 
+    4   readers += 1
+    5   mutex.signal() 
+    6   critical section (read-only)
+    7   mutex.wait() 
+    8   readers -= 1
+    9   if (readers == 0):
+    10      roomEmpty.signal() 
+    11  mutex.signal()
+
+    ;; WRITER THREAD 
+    1   roomEmpty.wait() 
+    2   critical section (writing)
+    3   roomEmpty.signal() 
+
+    ;; EXPLANATION 
+        The solution is based off of the regular mutex; however for the 
+    reading thread, the "critical section" is started by having more than 
+    one reader and ended when the last reader leaves. 
+        The readers are bound by mutex on coming in and leaving the section, 
+    but only the first reader in aquires the roomEmpty mutex, and the last 
+    reader out releases the roomEmpty mutex. Since the other reader threads 
+    are only bound by the mutex, the readers are allowed to come into the 
+    critical section while the readers count is greater than 0. When the last 
+    reader thread in the room leaves, the readers will signal, allowing for 
+    the writer to try to claim the roomEmpty lock.
+        If the first thread fails to aquire the roomEmpty lock, then it will 
+    go to sleep WITH the mutex lock. This prevents any other reader from 
+    making progress, and since the first reader failed to aquire the lock,
+    that means that it is the writer who has the lock, allowing for the 
+    writer to write exclusively (note that the mutex roomEmpty also prevents
+    two writers at the same time). Then, when the first reader thread is 
+    woken back up, it still has the lock, allowing it to enter the room.
