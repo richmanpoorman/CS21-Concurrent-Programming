@@ -1,0 +1,96 @@
+Name: Matthew Wong
+Date: 4 April 2024
+Time: 1 hr
+Help: N/A
+
+;; Puzzle 1: Writer Priority Reader-Write 
+
+    ;; SHARED MEMORY
+    1   readSwitch  = Lightswitch() 
+    2   writeSwitch = Lightswitch() 
+    3   readBlock   = Lightswitch()
+    4   mutex       = Semaphore(1)
+    5   noReaders   = Semaphore(1)
+    6   noWriters   = Semaphore(1)
+
+    ;; READER THREAD 
+    1   noWriters.wait() 
+    2   noWriters.signal() 
+    3   readSwitch.lock(noReaders) 
+    4   critical section 
+    5   readSwitch.unlock(noReaders)
+
+    ;; WRITER THREAD 
+    1   writeSwitch.lock(noWriters)
+    2   readBlock.lock(noReaders)
+    3   mutex.wait() 
+    4   critical section 
+    5   mutex.signal() 
+    6   writeSwitch.unlock(noWriters)
+    7   readBlock.unlock(noReaders)
+    
+    ;; EXPLANATION
+        Similar to the last problem, the readers use the noWriters as a 
+    turnstile. However, when a writer begins, instead of aquiring the lock, 
+    it uses a lightswitch to aquire the lock. This allows for multiple 
+    writer threads to come into the lock. Then, the readBlock lightswitch 
+    aquires the noReaders lock. This prevents readers from entering the 
+    critical section while the writers work on the threads. This is a 
+    lightswitch, as when multiple writer threads enter the read/write area,
+    the threads the noReaders should only be locked once, and unlocked at the 
+    end. This is because if there is a reader in between lines 2 and 3, 
+    then calling noReaders more than once may allow that thread to go 
+    while no all of the writers have finished. 
+
+;; Puzzle 2: No-Starve Mutex
+
+    ;; SHARED MEMORY 
+    1   room1 = 0
+    2   room2 = 0
+    3   t1    = Semaphore(1)
+    4   t2    = Semaphore(0)
+
+    ;; MUTEX THREAD 
+    1   mutex.wait() 
+    2   room1 += 1
+    3   mutex.signal() 
+    4   t1.wait() 
+    5   critical region
+    6   mutex.wait() 
+    7   room1 -= 1
+    8   if room1 == 0: 
+    9       t2.signal() 
+    10  else: 
+    11      t1.signal()
+    12  room2 += 1
+    13  mutex.signal() 
+    14  t2.wait() 
+    15  mutex.wait()
+    16  room2 -= 1
+    17  if room2 == 0: 
+    18      t1.signal() 
+    19  else:
+    20      t2.signal() 
+    21  mutex.signal()
+
+    ;; EXPLANATION
+        The room1 counts the number of the threads before the critical section,
+    and room2 counts the number of threads passed the critical seciton. 
+    The first room is controlled by t1, which acts as a mutex, as well as 
+    controlling the count of who leaves room1. If all of the threads have 
+    left room1, that means that room1 is empty, and all of the threads have 
+    gone through, so instead of unlocking the mutex, it unlocks the next 
+    turnstile t1. Note that since t1 is not unlocked after the mutex, it 
+    keeps t1 locked while t2 opens. 
+        Then, t2 is a turnstile which keeps track of how many threads are 
+    through. When all of the threads are through, instead of unlocking the 
+    turnstile t2, it instead unlocks t1 again (and keeps t2 closed). This 
+    allows for all of the threads to go back through the mutex. 
+        This mutex prevents starvation, as another thread can not go through 
+    again until all of the threads in room1 have gone, meaning that all threads
+    are able to go through the mutex (given that they are able to reach the 
+    mutex). In otherwords, a thread can't go through the mutex again until 
+    all of the other threads have gone through the mutex at least once, 
+    as if they haven't, they would be in room1, meaning that t2 (which lets 
+    the threads out of t2) would be locked, so the thread can go through 
+    the mutex again. 
