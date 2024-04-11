@@ -1,0 +1,104 @@
+Name: Matthew Wong
+Date: 11 April 2024
+Time: 1 hr
+Help: N/A
+
+;; Puzzle 1 : Cigarette Smokers 
+
+    ;; AGENT SEMAPHORE 
+    1   agentSem = Semaphore(1)
+    2   tobacco  = Semaphore(0)
+    3   paper    = Semaphore(0)
+    4   match    = Semaphore(0)
+
+    ;; SHARED MEMORY
+    1   isTobacco  = False 
+    2   isPaper    = False 
+    3   isMatch    = False 
+    4   tobaccoSem = Semaphore(0) 
+    5   paperSem   = Semaphore(0) 
+    6   matchSem   = Semaphore(0)
+    7   mutex      = Semaphore(1)
+    
+        ;; PUSHER THREADS 
+    
+    ;; Tobacco Pusher 
+    1   tobacco.wait() 
+    2   mutex.wait() 
+    3   isTobacco = True 
+    4   if isPaper: 
+    5       matchSem.signal() 
+    6   elif isMatch:
+    7       paperSem.signal() 
+    8   mutex.signal() 
+
+    ;; Paper Pusher 
+    1   paper.wait() 
+    2   mutex.wait() 
+    3   isPaper = True 
+    4   if isTobacco:
+    5       matchSem.signal() 
+    6   elif isMatch:
+    7       tobaccoSem.signal() 
+    8   mutex.signal() 
+
+    ;; Match Pusher 
+    1   match.wait() 
+    2   mutex.wait() 
+    3   isMatch = True
+    4   if isTobacco:
+    5       paperSem.signal() 
+    6   elif isPaper: 
+    7       tobaccoSem.signal() 
+    8   mutex.signal()  
+
+        ;; SMOKER THREADS 
+    
+    ;; Tobacco Thread 
+    1   tobaccoSem.wait() 
+    2   mutex.wait() 
+    3   isPaper = False 
+    4   isMatch = False 
+    5   mutex.signal() 
+    6   agentSem.signal() 
+
+    ;; Paper Thread 
+    1   paperSem.wait() 
+    2   mutex.wait() 
+    3   isTobacco = False 
+    4   isMatch   = False 
+    5   mutex.signal() 
+    6   agentSem.signal() 
+
+    ;; Match Thread 
+    1   matchSem.wait() 
+    2   mutex.wait() 
+    3   isPaper   = False 
+    4   isTobacco = False 
+    5   mutex.signal() 
+    6   agentSem.signal() 
+
+    ;; EXPLANATION 
+        All of the pusher threads and smoker threads are similar to each other,
+    so I will only describe a pusher and smoker generally. 
+        Each pusher only cares about checking one resource at a time. The job 
+    of each pusher is to mark that their resource is there, and if any of the 
+    other resources are marked, then it will wake up the appropriate smoker, 
+    allowing them to "use" the resources by setting them to false. To do this, 
+    the resources share a mutex in order to make sure that the resources don't 
+    change during the check for the if check. The pusher first marks the 
+    resource, then if either of the other resources are also marked true, then 
+    it knows which thread to signal to wake up. However, if neither of the 
+    other resources are true, then it was the first to check resources, so the 
+    other resource on the table will signal the correct smoker to wake up. 
+        The smoker will try to wait on the corresponding semaphore, and since 
+    the semaphore starts at 0, the smoker can't move forward until another 
+    thread first signals (which will be the second pusher to mark the resouces)
+    and when it moves forward, it will aquire the mutex. This will allow the 
+    smoker to "consume" the resources by marking the appropriate booleans 
+    to false, which would have had to be true in order for the smoker to wake 
+    up from the pusher. Then, finally, it will agentSem will be signaled, 
+    allowing it to repeat. Note that this set up prevents multiple smokers 
+    from being awake ay any given time, as the pusher will only activate on 
+    the second resource (which is the last resource), and will only activate 
+    the appropriate thread, meaning that the other threads are still asleep. 
