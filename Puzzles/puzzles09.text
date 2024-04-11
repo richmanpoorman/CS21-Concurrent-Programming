@@ -1,0 +1,37 @@
+Name: Matthew Wong
+Date: 9 April 2024
+Time: 1 hr
+Help: N/A
+
+;; Puzzle 1 : Dining philosophers 
+
+    ;; SHARED MEMORY
+    1   atTable = Semaphore(4) ;; Assuming we are using strong semaphores
+    2   fork    = [Semaphore(1) for _ in range(5)] ;; Assuming we are using strong semaphores
+
+    ;; getFork 
+    1   def get_forks(i):
+    2       atTable.wait() 
+    3       fork[right(i)].wait()
+    4       fork[left(i)].wait() 
+    
+
+    ;; setFork 
+    1   def put_forks(i):
+    2       fork[left(i)].signal() 
+    3       fork[right(i)].signal() 
+    4       atTable.signal() 
+
+    ;; EXPLANATION
+        The atTable semaphore prevents the 5th philosopher from eating at the 
+    table while there are 4 other philosophers are trying to eat. This 
+    prevents deadlock as since only 4 philosophers can try to pick up the 
+    forks, there will be at least one philosopher who can pick up two forks. 
+    This is because there is 5 forks, and the last fork can be picked up by 
+    one of the other philosophers, so it is guarenteed to be able to have fork.
+    This thread will eventually put down the fork, which will chain, and allow 
+    the other threads to pick up forks. 
+        Notice that there will be no starvation if they are strong semaphores,
+    as the philosopher that is waiting will eventually get to pick up a fork, 
+    and will eventually get to eat at the table. This is because semaphores 
+    will not starve threads that are waiting on them (since they are strong).
