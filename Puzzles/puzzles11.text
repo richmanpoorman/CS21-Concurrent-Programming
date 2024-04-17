@@ -1,0 +1,62 @@
+Name: Matthew Wong
+Date: 16 April 2024
+Time: 1 hr
+Help: N/A 
+
+;; Puzzle 1: Barbershop
+
+    ;; SHARED MEMORY 
+    1   n         = ...
+    2   customers = 0 
+    3   mutex     = Semaphore(1) 
+    4   customer  = Semaphore(0) 
+    5   barber    = Semaphore(0)
+    6   getCut    = Semaphore(1)
+
+    ;; BARBER THREAD 
+    1   while True: 
+    2       customer.wait() 
+    3       barber.signal() 
+    4       cutHair()
+
+    ;; CUSTOMER THREAD 
+    1   mutex.wait() 
+    2   if customers == n: 
+    3       mutex.signal()
+    4       balk() 
+    5   else: 
+    6       customer += 1
+    7       mutex.signal()
+    8       customer.signal() 
+    9       barber.wait() 
+    10      getCut.wait()
+    11      getHairCut()
+    12      getCut.signal()
+    13      mutex.wait() 
+    14      customer -= 1 
+    15      mutex.signal()
+        
+
+    ;; EXPLANATION 
+        The customer semaphore acts as the check if there are any customers 
+    that the barber could work with. The barber semaphore acts if the barber 
+    is free. Note that the barber is in a while True, as the barber can try 
+    to attend to multiple customers, while the customer only needs to get 1
+    haircut. 
+        The mutex protects the number of customers, which is used to check 
+    if all of the n seats are filled up. If they are filled up, then the 
+    function just balks. If they are not filled up, the counter increments, 
+    and the customer signals that there is a customer waiting. Then when 
+    barber signals to "attend" to the customer, the barber can call cutHair() 
+    and the customer can call getHairCut(). 
+        Note that the customer getHairCut() is in a mutex called getCut 
+    to prevent two customer threads from getting a hair cut at the same time.
+    Notice that if the barber finishes cutting very quickly, but the 
+    customer takes a long time getting a hair cut, another customer may 
+    come in and get a haircut at the same time. The mutex prevents this from 
+    happening, and since the barber only specifies that it has to be one 
+    thread calling getHairCut() at any time, the mutex prevents multiple 
+    threads from calling getHairCut() at any given time (even if cut runs 
+    through quickly, it will be the same getHairCut() running, and may even 
+    switch getHairCut() in the middle, but only one thread will be running 
+    getHairCut() at a time).
