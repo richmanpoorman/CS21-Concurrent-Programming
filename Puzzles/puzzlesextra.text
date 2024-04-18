@@ -1,0 +1,52 @@
+Name: Matthew Wong
+Date: 16 April 2024
+Time: 1 hr
+Help: N/A 
+
+;; Puzzle 1: Dining Savages 
+
+    ;; SHARED
+    1   M        = ...
+    2   serving  = 0 
+    3   mutex    = Semaphore(1)
+    4   emptyPot = Semaphore(0) 
+    5   fullPot  = Sempahore(0) 
+
+    ;; Cook 
+    1   while True:
+    2       mutex.wait() 
+    3       putServingsInPot(M)
+    4       serving = M
+    5       mutex.signal() 
+    6       fullPot.signal()
+    7       emptyPot.wait()
+    
+    ;; Savage 
+    1   while True: 
+    2       fullPot.wait() 
+    3       mutex.wait() 
+    4       getServingFromPot() 
+    5       serving -= 1
+    6       if server == 0: 
+    7           emptyPot.signal() 
+    8       else:
+    9           fullPot.signal() 
+    10      mutex.signal()
+    11      eat() 
+
+    ;; EXPLANATION 
+        The serving variable keeps track of how many serveings are still left 
+    in thee pot, and mutex protects serving when it is being checked or 
+    changed. Then, emptyPot is only signaled when the pot is completely empty,
+    and the fullPot is signaled when there is anything in the pot. Then, each 
+    savage will first wait for something to be in the pot, and they will come 
+    to the pot one at a time, and get the serving from the pot. 
+        If the pot still has food, then it will signal the next savage to 
+    come get food, but if the pot is empty, then savage will signal the 
+    cook to come fill up the pot. The savages will be able to eat the food 
+    concurrently, but will not be able to get from the pot when it is empty,
+    as the the savage which took the last pot won't re-signal the fullPot, 
+    leaving the others waiting for the fullpot, which will be signalled by the 
+    cook. 
+        Notice that the cook waits for empty pot after everything, as it 
+    needs to fill up the pot first. 
